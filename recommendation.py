@@ -81,6 +81,36 @@ def recommend_meal(restaurant, preference):
     return best_meal
 
 
+def recommend_top_meals(restaurant, preference, limit=3):
+    combinations = generate_combinations(restaurant)
+
+    if preference == "High Protein":
+        ranked_meals = sorted(
+            combinations,
+            key=lambda meal: calculate_nutrition(meal)[1],
+            reverse=True
+        )
+
+    elif preference == "High Carbs":
+        ranked_meals = sorted(
+            combinations,
+            key=lambda meal: calculate_nutrition(meal)[2],
+            reverse=True
+        )
+
+    elif preference == "Low Fat":
+        ranked_meals = sorted(
+            combinations,
+            key=lambda meal: calculate_nutrition(meal)[3]
+        )
+
+    else:
+        return []
+
+    return ranked_meals[:limit]
+
+
+
 
 def calculate_nutrition(meal):
     total_calories = 0
@@ -97,30 +127,21 @@ def calculate_nutrition(meal):
     return total_calories, total_protein, total_carbs, total_fat
 
 
-
+# Testing 
 
 if __name__ == "__main__":
+    meals = recommend_top_meals(
+        "Demo Restaurant",
+        "High Protein"
+    )
 
-    preferences = ["High Protein", "High Carbs", "Low Fat"]
-
-    for preference in preferences:
-        meal = recommend_meal("Demo Restaurant", preference)
-
-        print(f"\nPreference: {preference}")
-        print("-------------------------")
-
-        if meal is None:
-            print("No recommendation available.")
-            continue
+    for i, meal in enumerate(meals, start=1):
+        print(f"\nRecommendation #{i}")
 
         for item in meal:
             print(item[2])
 
         calories, protein, carbs, fat = calculate_nutrition(meal)
-
-        print(f"Calories: {calories}")
         print(f"Protein: {protein}g")
-        print(f"Carbs: {carbs}g")
-        print(f"Fat: {fat}g")
 
 

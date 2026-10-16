@@ -1,6 +1,7 @@
 import streamlit as st
 from database import create_table, populate_menu
-from recommendation import recommend_meal, calculate_nutrition
+from recommendation import recommend_top_meals, calculate_nutrition
+from ai_service import explain_meal
 
 # Initialize the database
 create_table()
@@ -24,25 +25,36 @@ preference = st.selectbox(
 
 # Recommendation button
 if st.button("Find My Meal"):
-    meal = recommend_meal(restaurant, preference)
+    meals = recommend_top_meals(restaurant, preference)
 
-    if meal is None:
-        st.warning("No recommendation available.")
+    if not meals:
+        st.warning("No recommendations available.")
 
     else:
-        st.subheader("Your Recommended Meal")
+        st.subheader("Your Top Meal Recommendations")
 
-        for item in meal:
-            st.write(item[2])
+        for i, meal in enumerate(meals, start=1):
+            st.write(f"### Recommendation #{i}")
 
-        calories, protein, carbs, fat = calculate_nutrition(meal)
+            for item in meal:
+                st.write(item[2])
 
-        st.write("### Nutritional Information")
-        st.write(f"Calories: {calories}")
-        st.write(f"Protein: {protein}g")
-        st.write(f"Carbs: {carbs}g")
-        st.write(f"Fat: {fat}g")
+            calories, protein, carbs, fat = calculate_nutrition(meal)
 
-        st.caption(
-            "Nutrition values are illustrative demo data."
-        )
+            st.write(f"Calories: {calories}")
+            st.write(f"Protein: {protein}g")
+            st.write(f"Carbs: {carbs}g")
+            st.write(f"Fat: {fat}g")
+
+            # Generate an AI explanation for the recommended meal
+            nutrition = (calories, protein, carbs, fat)
+
+            with st.spinner("Generating AI explanation..."):
+                explanation = explain_meal(meal, preference, nutrition)
+
+            st.write("**Why this meal?**")
+            st.write(explanation)
+
+            st.divider()
+
+        st.caption("Nutrition values are illustrative demo data.")
